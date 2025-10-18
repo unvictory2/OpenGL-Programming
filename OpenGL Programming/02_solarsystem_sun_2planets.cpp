@@ -3,6 +3,7 @@
 //		Solar system (Earth)			//
 //		2023. 5. 11						//
 //////////////////////////////////////////
+// 행성 간 거리는 실제비율 반영보단 간편함을 목적으로 적당한 값을 줌
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -25,8 +26,8 @@ void init_sphere(float**, int*, int*); // 구 정점 계산
 void init_textures(); // 텍스쳐 관련 초기화
 
 // settings 창 크기
-const unsigned int SCR_WIDTH = 1000;
-const unsigned int SCR_HEIGHT = 1000;
+const unsigned int SCR_WIDTH = 1920;
+const unsigned int SCR_HEIGHT = 1080;
 
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 50.0f));
@@ -51,24 +52,24 @@ glm::vec3 lightPos(21.2f, 21.0f, 12.0f); // 빛이 있는 위치. (0,0,0)으로 
 const float rotp_sun = 25.38f;
 const float rotp_mercury = 58.6462f;
 const float rotp_venus = 243.0185f;
-//const float rotp_earth = 0.99726963f;
-//const float rotp_moon = 27.3216f;
-//const float rotp_mars = 1.02595676f;
-//const float rotp_jupiter = 0.410f;
-//const float rotp_saturn = 0.426f;
-//const float rotp_uranus = 0.718f;
-//const float rotp_neptune = 0.669;
+const float rotp_earth = 0.99726963f;
+const float rotp_moon = 27.3216f;
+const float rotp_mars = 1.02595676f;
+const float rotp_jupiter = 0.410f;
+const float rotp_saturn = 0.426f;
+const float rotp_uranus = 0.718f;
+const float rotp_neptune = 0.669;
 
 // revolution periods of the planets, and moon 공전주기
 const float revp_mercury = 87.97f;
 const float revp_venus = 224.7f;
 const float revp_earth = 365.26f;
 const float revp_moon = 27.322f;
-//const float revp_mars = 686.96f;
-//const float revp_jupiter = 4333.29f;
-//const float revp_saturn = 10756.20f;
-//const float revp_uranus = 30707.49f;
-//const float revp_neptune = 60223.35;
+const float revp_mars = 686.96f;
+const float revp_jupiter = 4333.29f;
+const float revp_saturn = 10756.20f;
+const float revp_uranus = 30707.49f;
+const float revp_neptune = 60223.35;
 
 // speed of rotation and revolution
 const float rot_speed = 20.0f;
@@ -79,11 +80,11 @@ const float radi_mercury = 0.24f;	//2439.7f;
 const float radi_venus = 0.60f;	//6051.8f;
 const float radi_earth = 0.63f;	//6371.0f;
 const float radi_moon = 0.17f;	//1737.4f;
-//const float radi_mars = 0.3389f;	//3389.5f;
-//const float radi_jupiter = 1.0f; // 69911.0f;
-//const float radi_saturn = 0.9f; // 58232.0f;
-//const float radi_uranus = 0.43f; // 25362.0f;
-//const float radi_neptune = 0.4f; // 24622.0f;
+const float radi_mars = 0.3389f;	//3389.5f;
+const float radi_jupiter = 1.0f; // 69911.0f;
+const float radi_saturn = 0.9f; // 58232.0f;
+const float radi_uranus = 0.43f; // 25362.0f;
+const float radi_neptune = 0.4f; // 24622.0f;
 
 // textures 텍스쳐 사용하려면 텍스쳐 변수 만들어놔야 한다.
 unsigned int texture_sun, texture_mercury, texture_venus, texture_earth, texture_moon;
@@ -288,7 +289,7 @@ int main()
 		// world transformation
 		// 북극 위로 돌리고 / 크기만큼 키우고 / 자전하고 / 위치까지 x축으로 평행이동하고 / 공전하고 / 기울이고
 		// 윗줄에서  기울이고의 뜻 > 태양계 좀 삐딱하게 봐야 잘 보여서 태양계를 약간 회전시켜둠
-		float dist = radi_sun + 3 * radi_mercury; // 태양 반지름보다 커야 태양 밖에 있음 + 적당한 거리.
+		float dist = radi_sun + 3 * radi_mercury; // 태양 반지름보다 커야 태양 밖에 있음 + 적당한 거리. 행성 간 거리는 실제비율 반영보단 간편함을 목적으로 적당한 값을 줌, 실제 비율을 쓰려면 dist = 2080.0f * radi_mercury;여야 해서 보기 힘듬.
 		model = sun_model;
 		model = glm::rotate(model, (float)glfwGetTime() * rot_speed / revp_mercury, glm::vec3(0.0f, 1.0f, 0.0f));	// mercury 공전, y축
 		model = glm::translate(model, glm::vec3(dist, 0.0f, 0.0f));						// the translation of the mercury from the sun
@@ -332,9 +333,9 @@ int main()
 		model = sun_model; // sun model 써줘야 sun이 영향 받을 때 같이 영향 받음(?)
 		model = glm::rotate(model, (float)glfwGetTime() * rot_speed / revp_earth, glm::vec3(0.0f, 1.0f, 0.0f));	// the revolution of the earth
 		model = glm::translate(model, glm::vec3(dist, 0.0f, 0.0f));						// the translation of the earth from the sun
-		model = glm::rotate(model, (float)glfwGetTime() * rot_speed / rotp_earth, glm::vec3(0.0f, 1.0f, 0.0f));	// the rotation of the earth
-		// 다른 태양계 행성들이 sun_model 갖다 쓰듯 earth_model을 달이 가져다 쓰기 위해 저장. 지구의 윗 3줄 움직임 쫓아가기 위해. 근데 지구 자전은 빠졌어야 됐다!
+		// 다른 태양계 행성들이 sun_model 갖다 쓰듯 earth_model을 달이 가져다 쓰기 위해 저장. 지구의 윗 2줄 움직임 쫓아가기 위해. 교수님은 지구 자전 밑줄에 하셨는데 지구 자전은 빠졌어야 됐다고 하셨으니까 윗줄로.
 		glm::mat4 earth_model = model;
+		model = glm::rotate(model, (float)glfwGetTime() * rot_speed / rotp_earth, glm::vec3(0.0f, 1.0f, 0.0f));	// the rotation of the earth
 		model = glm::scale(model, glm::vec3(radi_earth, radi_earth, radi_earth));
 		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		planetShader.setMat4("model", model);
@@ -349,13 +350,17 @@ int main()
 
 		// moon 	
 		// -----------
-						// world transformation
+		// world transformation
 		model = earth_model;
-		model = glm::rotate(model, (float)glfwGetTime() * rot_speed / revp_moon, glm::vec3(0.0f, 1.0f, 0.0f));	// the revolution of the moon
+		// glm::rotate는 model 행렬에 회전 변환을 곱하는 함수. glfwGetTime()은 프로그램 시작 후 경과한 초 반환, 애니메이션의 시간 기반 움직임에 사용
+		// 
+		// glm::vec3(0.0f, 1.0f, 0.0f)은 회전축 의미, y축 회전 
+		model = glm::rotate(model, (float)glfwGetTime() * rot_speed / revp_moon, glm::vec3(0.0f, 1.0f, 0.0f));	// 공전
 		model = glm::translate(model, glm::vec3(1.5f * radi_earth, 0.0f, 0.0f));						// the translation of the moon from the earth
-		model = glm::rotate(model, (float)glfwGetTime() * rot_speed / rotp_moon, glm::vec3(0.0f, 1.0f, 0.0f));	// the rotation of the moon
+		// model = glm::rotate(model, (float)glfwGetTime() * rot_speed / rotp_moon, glm::vec3(0.0f, 1.0f, 0.0f));// the rotation of the moon
+		model = glm::rotate(model, ((float)glfwGetTime() * rot_speed / rotp_moon) - (float)glfwGetTime() * rot_speed / revp_moon, glm::vec3(0.0f, 1.0f, 0.0f));	// 달의 자전. 자전과 공전의 각도 차이만큼 
 		model = glm::scale(model, glm::vec3(radi_moon, radi_moon, radi_moon));
-		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)); 
 		planetShader.setMat4("model", model);
 
 		// bind textures on corresponding texture units
@@ -368,18 +373,101 @@ int main()
 
 		// mars 	
 		// -----------
+		// world transformation
+		dist = dist + 3 * radi_mars;
+		model = sun_model;
+		model = glm::rotate(model, (float)glfwGetTime() * rot_speed / revp_mars, glm::vec3(0.0f, 1.0f, 0.0f));	// the revolution of the earth
+		model = glm::translate(model, glm::vec3(dist, 0.0f, 0.0f));						// the translation of the earth from the sun
+		model = glm::rotate(model, (float)glfwGetTime() * rot_speed / rotp_mars, glm::vec3(0.0f, 1.0f, 0.0f));	// the rotation of the earth
+		model = glm::scale(model, glm::vec3(radi_mars, radi_mars, radi_mars));
+		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		planetShader.setMat4("model", model);
+
+		// bind textures on corresponding texture units
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture_mars);
+
+		// render the sphere
+		glBindVertexArray(sphereVAO);
+		glDrawArrays(GL_TRIANGLES, 0, nSphereVert);
 
 		// jupiter 	
 		// -----------
+		// world transformation
+		dist = dist + 6 * radi_jupiter;
+		model = sun_model;
+		model = glm::rotate(model, (float)glfwGetTime() * rot_speed / revp_jupiter, glm::vec3(0.0f, 1.0f, 0.0f));	// the revolution of the earth
+		model = glm::translate(model, glm::vec3(dist, 0.0f, 0.0f));						// the translation of the earth from the sun
+		model = glm::rotate(model, (float)glfwGetTime() * rot_speed / rotp_jupiter, glm::vec3(0.0f, 1.0f, 0.0f));	// the rotation of the earth
+		model = glm::scale(model, glm::vec3(radi_jupiter, radi_jupiter, radi_jupiter));
+		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		planetShader.setMat4("model", model);
+
+		// bind textures on corresponding texture units
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture_jupiter);
+
+		// render the sphere
+		glBindVertexArray(sphereVAO);
+		glDrawArrays(GL_TRIANGLES, 0, nSphereVert);
 
 		// saturn 	
 		// -----------
+		// world transformation
+		dist = dist + 6 * radi_saturn;
+		model = sun_model;
+		model = glm::rotate(model, (float)glfwGetTime() * rot_speed / revp_saturn, glm::vec3(0.0f, 1.0f, 0.0f));	// the revolution of the earth
+		model = glm::translate(model, glm::vec3(dist, 0.0f, 0.0f));						// the translation of the earth from the sun
+		model = glm::rotate(model, (float)glfwGetTime() * rot_speed / rotp_saturn, glm::vec3(0.0f, 1.0f, 0.0f));	// the rotation of the earth
+		model = glm::scale(model, glm::vec3(radi_saturn, radi_saturn, radi_saturn));
+		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		planetShader.setMat4("model", model);
+
+		// bind textures on corresponding texture units
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture_saturn);
+
+		// render the sphere
+		glBindVertexArray(sphereVAO);
+		glDrawArrays(GL_TRIANGLES, 0, nSphereVert);
 
 		// uranus 	
-		// -----------
+		// world transformation
+		dist = dist + 6 * radi_uranus;
+		model = sun_model;
+		model = glm::rotate(model, (float)glfwGetTime() * rot_speed / revp_uranus, glm::vec3(0.0f, 1.0f, 0.0f));	// the revolution of the earth
+		model = glm::translate(model, glm::vec3(dist, 0.0f, 0.0f));						// the translation of the earth from the sun
+		model = glm::rotate(model, (float)glfwGetTime() * rot_speed / rotp_uranus, glm::vec3(0.0f, 1.0f, 0.0f));	// the rotation of the earth
+		model = glm::scale(model, glm::vec3(radi_uranus, radi_uranus, radi_uranus));
+		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		planetShader.setMat4("model", model);
+
+		// bind textures on corresponding texture units
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture_uranus);
+
+		// render the sphere
+		glBindVertexArray(sphereVAO);
+		glDrawArrays(GL_TRIANGLES, 0, nSphereVert);
 
 		// neptune 	
-		// -----------
+		// world transformation
+		dist = dist + 6 * radi_neptune;
+		model = sun_model;
+		model = glm::rotate(model, (float)glfwGetTime() * rot_speed / revp_neptune, glm::vec3(0.0f, 1.0f, 0.0f));	// the revolution of the earth
+		model = glm::translate(model, glm::vec3(dist, 0.0f, 0.0f));						// the translation of the earth from the sun
+		model = glm::rotate(model, (float)glfwGetTime() * rot_speed / rotp_neptune, glm::vec3(0.0f, 1.0f, 0.0f));	// the rotation of the earth
+		model = glm::scale(model, glm::vec3(radi_neptune, radi_neptune, radi_neptune));
+		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		planetShader.setMat4("model", model);
+
+		// bind textures on corresponding texture units
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture_neptune);
+
+		// render the sphere
+		glBindVertexArray(sphereVAO);
+		glDrawArrays(GL_TRIANGLES, 0, nSphereVert);
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
