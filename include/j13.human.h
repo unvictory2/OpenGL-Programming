@@ -405,44 +405,77 @@ private:
 				Pose[walkLeftDownHigh][footR] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
 				break;
 
-				// 뼈 이름 참고
-				//enum Human_Bone {		// 20 bones
-				//	pelvis, spine,
-				//	neck, head,
-				//	clavicleL, upperarmL, forearmL, handL, // hand는 palm/5 fingers로 나눌 수도 있다.
-				//	clavicleR, upperarmR, forearmR, handR,
-				//	thighL, calfL, footL, toeL,
-				//	thighR, calfR, footR, toeR
-				//};
-
-
 			// 점프 ============================
-			case jumpReady:
-				// 점프 준비 자세
-				Pose[jumpReady][upperarmL] = glm::angleAxis(glm::radians(-45.f), glm::vec3(1.f, 0.f, 0.f));
-				Pose[jumpReady][upperarmR] = glm::angleAxis(glm::radians(-45.f), glm::vec3(1.f, 0.f, 0.f));
-				Pose[jumpReady][thighL] = glm::angleAxis(glm::radians(30.f), glm::vec3(1.f, 0.f, 0.f));
-				Pose[jumpReady][thighR] = glm::angleAxis(glm::radians(30.f), glm::vec3(1.f, 0.f, 0.f));
+			case jumpReady:// 왼팔/오른발 살짝 앞, 오른팔/왼발 살짝 뒤
+				Pose[jumpReady][spine] = glm::angleAxis(glm::radians(25.f), glm::vec3(1.f, 0.f, 0.f));
+
+				Pose[jumpReady][upperarmL] = glm::angleAxis(glm::radians(31.f), glm::vec3(0.f, 1.f, 0.f));
+				Pose[jumpReady][upperarmR] = glm::angleAxis(glm::radians(-31.f), glm::vec3(0.f, 1.f, 0.f));
+
+				Pose[jumpReady][forearmL] = glm::angleAxis(glm::radians(55.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpReady][forearmR] = glm::angleAxis(glm::radians(55.f), glm::vec3(1.f, 0.f, 0.f));
+
+				Pose[jumpReady][handL] = glm::angleAxis(glm::radians(12.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpReady][handR] = glm::angleAxis(glm::radians(12.f), glm::vec3(1.f, 0.f, 0.f));
+
+				Pose[jumpReady][thighR] = glm::angleAxis(glm::radians(-20.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpReady][calfR] = glm::angleAxis(glm::radians(50.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpReady][footR] = glm::angleAxis(glm::radians(-30.f), glm::vec3(1.f, 0.f, 0.f));
+
+				Pose[jumpReady][thighL] = glm::angleAxis(glm::radians(-20.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpReady][calfL] = glm::angleAxis(glm::radians(50.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpReady][footL] = glm::angleAxis(glm::radians(-30.f), glm::vec3(1.f, 0.f, 0.f));
+
+
 				break;
 
+
 			case jumpStart:
-				// 점프 시작 동작(고점 이후 다시 내려올 때도 적용)
-				Pose[jumpStart][upperarmL] = glm::angleAxis(glm::radians(0.f), glm::vec3(1.f, 0.f, 0.f));
-				Pose[jumpStart][upperarmR] = glm::angleAxis(glm::radians(0.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpStart][upperarmL] = glm::angleAxis(glm::radians(-10.f), glm::vec3(0.f, 1.f, 0.f));
+				Pose[jumpStart][upperarmR] = glm::angleAxis(glm::radians(10.f), glm::vec3(0.f, 1.f, 0.f));
+
+				Pose[jumpStart][forearmL] = glm::angleAxis(glm::radians(55.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpStart][forearmR] = glm::angleAxis(glm::radians(55.f), glm::vec3(1.f, 0.f, 0.f));
+
+				Pose[jumpStart][footR] = glm::angleAxis(glm::radians(45.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpStart][footL] = glm::angleAxis(glm::radians(45.f), glm::vec3(1.f, 0.f, 0.f));
 
 				break;
 
 			case jumpHigh:
-				// 점프 최고점 
-				Pose[jumpHigh][upperarmL] = glm::angleAxis(glm::radians(60.f), glm::vec3(1.f, 0.f, 0.f));
-				Pose[jumpHigh][upperarmR] = glm::angleAxis(glm::radians(60.f), glm::vec3(1.f, 0.f, 0.f));
+
+				Pose[jumpHigh][spine] = glm::angleAxis(glm::radians(-5.f), glm::vec3(1.f, 0.f, 0.f));
+
+				Pose[jumpHigh][upperarmL] = glm::angleAxis(glm::radians(-25.f), glm::vec3(0.f, 1.f, 0.f));
+				Pose[jumpHigh][upperarmR] = glm::angleAxis(glm::radians(25.f), glm::vec3(0.f, 1.f, 0.f));
+
+				Pose[jumpHigh][forearmL] = glm::angleAxis(glm::radians(80.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpHigh][forearmR] = glm::angleAxis(glm::radians(80.f), glm::vec3(1.f, 0.f, 0.f));
+
+				Pose[jumpHigh][footR] = glm::angleAxis(glm::radians(55.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpHigh][footL] = glm::angleAxis(glm::radians(55.f), glm::vec3(1.f, 0.f, 0.f));
+
 
 				break;
 
 			case jumpLand:
-				// 착지 자세 
-				Pose[jumpLand][thighL] = glm::angleAxis(glm::radians(-20.f), glm::vec3(1.f, 0.f, 0.f));
-				Pose[jumpLand][thighR] = glm::angleAxis(glm::radians(-20.f), glm::vec3(1.f, 0.f, 0.f));
+
+				Pose[jumpLand][spine] = glm::angleAxis(glm::radians(15.f), glm::vec3(1.f, 0.f, 0.f));
+
+
+				Pose[jumpLand][upperarmL] = glm::angleAxis(glm::radians(15.f), glm::vec3(0.f, 1.f, 0.f));
+				Pose[jumpLand][upperarmR] = glm::angleAxis(glm::radians(-15.f), glm::vec3(0.f, 1.f, 0.f));
+
+				Pose[jumpLand][forearmL] = glm::angleAxis(glm::radians(25.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpLand][forearmR] = glm::angleAxis(glm::radians(25.f), glm::vec3(1.f, 0.f, 0.f));
+
+				Pose[jumpLand][thighR] = glm::angleAxis(glm::radians(-10.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpLand][calfR] = glm::angleAxis(glm::radians(25.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpLand][footR] = glm::angleAxis(glm::radians(-15.f), glm::vec3(1.f, 0.f, 0.f));
+
+				Pose[jumpLand][thighL] = glm::angleAxis(glm::radians(-10.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpLand][calfL] = glm::angleAxis(glm::radians(25.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpLand][footL] = glm::angleAxis(glm::radians(-15.f), glm::vec3(1.f, 0.f, 0.f));
 
 				break;
 
