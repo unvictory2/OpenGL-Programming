@@ -30,7 +30,6 @@ enum Human_Pose {
 	// base는 기본 차렷 포즈
 	start, walkLeftUpMid, 
 	walkLeftUpHigh, walkLeftDownMid, walkLeftDownHigh,
-	Human_Pose_Count
 };
 
 // 재생 순서. 별로 좋은 방법은 아닌 것 같지만 간단하고 빠르게 하기 위함

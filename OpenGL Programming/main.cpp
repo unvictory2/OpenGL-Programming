@@ -40,8 +40,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 // 포즈 보간할 때 쓸 예정
-const int numPoses = Human_Pose_Count;
-Human_Pose poses[Human_Pose_Count];
+Human_Pose poses[POSENUM];
 const float totalMotionTime = 3.0f;  
 const int numSegments = poseSequenceCount - 1;
 const float segmentTime = totalMotionTime / numSegments;
@@ -175,7 +174,7 @@ int main()
 	Human human;
 	
 	// 포즈 가져오기
-	for (int i = 0; i < numPoses; ++i)
+	for (int i = 0; i < POSENUM; ++i)
 		poses[i] = static_cast<Human_Pose>(i);
 
 	// render loop
