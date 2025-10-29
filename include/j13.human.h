@@ -27,13 +27,15 @@ enum Human_Bone {		// 20 bones
 // 모션 != 포즈. 모션은 움직임, 포즈는 움직임의 결과물. 관절의 회전 각도를 코드로 넣으면 그 사이 모션은 보간돼서 알아서 생성됨
 // 포즈 추가 시 밑의 POSENUM 늘리기
 enum Human_Pose {
-	// base는 기본 T자 포즈
-	base, armLeftUp
+	// base는 기본 차렷 포즈
+	start, walkLeftUpMid, 
+	walkLeftUpHigh, walkLeftDownMid, walkLeftDownHigh,
+	Human_Pose_Count  // 포즈 개수 관리용, main.cpp에서 사용
 };
 
 // Default values
 const int BONENUM = 20;
-const int POSENUM = 2;
+const int POSENUM = 5;
 
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
@@ -57,7 +59,7 @@ public:
 		// setup poses
 		SetupPoses();
 		// bone rotation - base pose
-		SetPose(base);
+		SetPose(start);
 	}
 
 	// 포즈 바꾸기
@@ -128,7 +130,8 @@ public:
 		bone = glm::scale(bone, glm::vec3(1.0f, 1.0f / BoneLength[head], 1.0f));
 		// draw clavicleL
 		bone = mspine;
-		bone = glm::translate(bone, glm::vec3(0.5f, BoneLength[spine], 0.0f));
+		bone = glm::translate(bone, glm::vec3(0.2f, BoneLength[spine], 0.0f));
+		bone = glm::rotate(bone, glm::radians(-90.f), glm::vec3(0.f, 0.f, 1.f)); // 쇄골은 실제 인체와 같이 땅과 평행하게
 		bone = bone * glm::mat4_cast(BoneRotate[clavicleL]);
 		bone = glm::scale(bone, glm::vec3(0.5f, BoneLength[clavicleL], 0.5f));
 		shader.setMat4("model", bone);
@@ -139,6 +142,7 @@ public:
 		// draw upperarmL
 		bone = glm::translate(bone, glm::vec3(0.0f, BoneLength[clavicleL], 0.0f));
 		bone = bone * glm::mat4_cast(BoneRotate[upperarmL]);
+		bone = glm::rotate(bone, glm::radians(-90.f), glm::vec3(0.f, 0.f, 1.f)); // 쇄골 돌아가서 팔 회전 
 		bone = glm::scale(bone, glm::vec3(0.5f, BoneLength[upperarmL], 0.5f));
 		shader.setMat4("model", bone);
 		shader.setVec3("objectColor", 0.3f, 0.0f, 0.7f);
@@ -166,7 +170,8 @@ public:
 		// 이전 부모와 연결 안 된 경우
 		// draw clavicleR
 		bone = mspine; // 척추에서부터
-		bone = glm::translate(bone, glm::vec3(-0.5f, BoneLength[spine], 0.0f));
+		bone = glm::translate(bone, glm::vec3(-.2f, BoneLength[spine], 0.0f));
+		bone = glm::rotate(bone, glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f)); // 쇄골은 실제 인체와 같이 땅과 평행하게
 		bone = bone * glm::mat4_cast(BoneRotate[clavicleR]);
 		bone = glm::scale(bone, glm::vec3(0.5f, BoneLength[clavicleR], 0.5f));
 		shader.setMat4("model", bone);
@@ -177,6 +182,7 @@ public:
 		// draw upperarmR
 		bone = glm::translate(bone, glm::vec3(0.0f, BoneLength[clavicleR], 0.0f));
 		bone = bone * glm::mat4_cast(BoneRotate[upperarmR]);
+		bone = glm::rotate(bone, glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f)); // 쇄골 돌아가서 팔 회조ㅓㄴ
 		bone = glm::scale(bone, glm::vec3(0.5f, BoneLength[upperarmR], 0.5f));
 		shader.setMat4("model", bone);
 		shader.setVec3("objectColor", 0.3f, 0.0f, 0.7f);
@@ -201,30 +207,106 @@ public:
 		glBindVertexArray(cubeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		bone = glm::scale(bone, glm::vec3(2.0f, 1.0f / BoneLength[handR], 2.0f));
+		// 골반 아래 ================================
 		// draw thighL
 		bone = mpelvis;
-		bone = glm::translate(bone, glm::vec3(0.5f, -BoneLength[pelvis], 0.0f));
+		//bone = glm::translate(bone, glm::vec3(0.5f, -BoneLength[pelvis], 0.0f));
+		bone = glm::translate(bone, glm::vec3(0.5f, 0.0f, 0.0f));
 		bone = bone * glm::mat4_cast(BoneRotate[thighL]);
+		bone = glm::rotate(bone, glm::radians(180.f), glm::vec3(1.f, 0.f, 0.f)); // 골반 아래부터는 아래로 뒤집기
 		bone = glm::scale(bone, glm::vec3(0.5f, BoneLength[thighL], 0.5f));
 		shader.setMat4("model", bone);
 		shader.setVec3("objectColor", 1.0f, 0.7f, 0.0f);
 		glBindVertexArray(cubeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		bone = glm::scale(bone, glm::vec3(2.0f, 1.0f / BoneLength[thighL], 2.0f));
-		// ....
 		// draw calfL
+		bone = glm::translate(bone, glm::vec3(0.0f, BoneLength[thighL], 0.0f));
+		bone = bone * glm::mat4_cast(BoneRotate[calfL]);
+		bone = glm::scale(bone, glm::vec3(0.5f, BoneLength[calfL], 0.5f));
+		shader.setMat4("model", bone);
+		shader.setVec3("objectColor", 0.5f, 0.7f, 0.0f);
+		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		bone = glm::scale(bone, glm::vec3(2.0f, 1.0f / BoneLength[calfL], 2.0f));
 		// draw footL
+		bone = glm::translate(bone, glm::vec3(0.0f, BoneLength[calfL], 0.0f));
+		bone = bone * glm::mat4_cast(BoneRotate[footL]);
+		bone = glm::rotate(bone, glm::radians(90.f), glm::vec3(-1.f, 0.f, 0.f));  //발은 땅 바라보게 추가로 회전
+		bone = glm::scale(bone, glm::vec3(0.5f, BoneLength[footL], 0.5f));
+		shader.setMat4("model", bone);
+		shader.setVec3("objectColor", 0.3f, 0.9f, 0.2f);
+		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		bone = glm::scale(bone, glm::vec3(2.0f, 1.0f / BoneLength[footL], 2.0f));
 		// draw toeL
+		bone = glm::translate(bone, glm::vec3(-0.0f, BoneLength[footL], 0.0f));
+		//bone = bone * glm::mat4_cast(BoneRotate[toeL]); //발가락은 회전할 일 x
+		bone = glm::scale(bone, glm::vec3(0.5f, BoneLength[toeL], 0.5f));
+		shader.setMat4("model", bone);
+		shader.setVec3("objectColor", 0.3f, 0.1f, 0.5f);
+		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		bone = glm::scale(bone, glm::vec3(2.0f, 1.0f / BoneLength[toeL], 2.0f));
 		// draw thighR
+		bone = mpelvis;
+		bone = glm::translate(bone, glm::vec3(-0.5f, 0.0f, 0.0f));
+		bone = bone * glm::mat4_cast(BoneRotate[thighR]);
+		bone = glm::rotate(bone, glm::radians(180.f), glm::vec3(1.f, 0.f, 0.f)); // 골반 아래부터는 아래로 뒤집기
+		bone = glm::scale(bone, glm::vec3(0.5f, BoneLength[thighR], 0.5f));
+		shader.setMat4("model", bone);
+		shader.setVec3("objectColor", 1.0f, 0.7f, 0.0f);
+		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		bone = glm::scale(bone, glm::vec3(2.0f, 1.0f / BoneLength[thighR], 2.0f));
 		// draw calfR
+		bone = glm::translate(bone, glm::vec3(0.0f, BoneLength[thighR], 0.0f));
+		bone = bone * glm::mat4_cast(BoneRotate[calfR]);
+		bone = glm::scale(bone, glm::vec3(0.5f, BoneLength[calfR], 0.5f));
+		shader.setMat4("model", bone);
+		shader.setVec3("objectColor", 0.5f, 0.7f, 0.0f);
+		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		bone = glm::scale(bone, glm::vec3(2.0f, 1.0f / BoneLength[calfR], 2.0f));
 		// draw footR
+		bone = glm::translate(bone, glm::vec3(0.0f, BoneLength[calfR], 0.0f));
+		bone = bone * glm::mat4_cast(BoneRotate[footR]);
+		bone = glm::rotate(bone, glm::radians(90.f), glm::vec3(-1.f, 0.f, 0.f));  //발은 땅 바라보게 추가로 회전
+		bone = glm::scale(bone, glm::vec3(0.5f, BoneLength[footR], 0.5f));
+		shader.setMat4("model", bone);
+		shader.setVec3("objectColor", 0.3f, 0.9f, 0.2f);
+		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		bone = glm::scale(bone, glm::vec3(2.0f, 1.0f / BoneLength[footR], 2.0f));
 		// draw toeR
-		// glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		bone = glm::translate(bone, glm::vec3(-0.0f, BoneLength[footR], 0.0f));
+		bone = glm::scale(bone, glm::vec3(0.5f, BoneLength[toeR], 0.5f));
+		shader.setMat4("model", bone);
+		shader.setVec3("objectColor", 0.3f, 0.1f, 0.5f);
+		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		bone = glm::scale(bone, glm::vec3(2.0f, 1.0f / BoneLength[toeR], 2.0f));
+		 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
 private:
 	float		BoneLength[BONENUM];
 	glm::quat	Pose[POSENUM][BONENUM];
+
+	// 뼈 이름 참고
+	//enum Human_Bone {		// 20 bones
+	//	pelvis, spine,
+	//	neck, head,
+	//	clavicleL, upperarmL, forearmL, handL, // hand는 palm/5 fingers로 나눌 수도 있다.
+	//	clavicleR, upperarmR, forearmR, handR,
+	//	thighL, calfL, footL, toeL,
+	//	thighR, calfR, footR, toeR
+	//};
+
+	// x축: 카메라 방향
+	// y축: 상하
+	// z축: 좌우
+
 
 	// 초기화. 포즈 전부 읽어들이기. 
 	void SetupPoses()
@@ -234,19 +316,21 @@ private:
 			for (int i = 0; i < BONENUM; i++)
 				// Pose는 quertanion 2차 행렬. p에는 포즈 이름, i에는 bone들 들어가있음. 일단 초기화.
 				// 이건 z축으로 돼있는데, 이건 팔만 올리는 거라 걸을 땐 축이 다르다. x축이다. 그래서 걷는 걸 만들 땐 x축 기준으로 바꿔야 할지도.
-				Pose[p][i] = glm::angleAxis(glm::radians(0.f), glm::vec3(0.f, 0.f, 1.f));
+				Pose[p][i] = glm::angleAxis(glm::radians(0.f), glm::vec3(1.f, 0.f, 0.f));
 
 			switch (p) {
-			case base:
-				// T자포즈
-				Pose[base][clavicleL] = glm::angleAxis(glm::radians(-90.f), glm::vec3(0.f, 0.f, 1.f));
-				Pose[base][clavicleR] = glm::angleAxis(glm::radians( 90.f), glm::vec3(0.f, 0.f, 1.f));
+			case start:// 최종 포즈 기준으로 입력. 차렷포즈. 쇄골은 상완이랑 직각임(현실 인체에서 그러니까)
 				break;
-			case armLeftUp:// 최종 포즈 기준으로 입력. 
-				Pose[armLeftUp][clavicleL] = glm::angleAxis(glm::radians(-90.f), glm::vec3(0.f, 0.f, 1.f));
-				Pose[armLeftUp][upperarmL] = glm::angleAxis(glm::radians(50.f), glm::vec3(0.f, 0.f, 1.f));
-				Pose[armLeftUp][forearmL] = glm::angleAxis(glm::radians(50.f), glm::vec3(0.f, 0.f, 1.f));
-				Pose[armLeftUp][clavicleR] = glm::angleAxis(glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f));
+			case walkLeftUpMid:// 왼팔/오른발 살짝 앞, 오른팔/왼발 살짝 뒤
+				//Pose[walkLeftUpMid][upperarmL] = glm::angleAxis(glm::radians(190.f), glm::vec3(1.f, 0.f, 0.f));
+				//Pose[walkLeftUpMid][upperarmR] = glm::angleAxis(glm::radians(190.f), glm::vec3(1.f, 0.f, 0.f));
+
+				break;
+			case walkLeftUpHigh:
+				break;
+			case walkLeftDownMid:
+				break;			
+			case walkLeftDownHigh:
 				break;
 			default:
 				;
