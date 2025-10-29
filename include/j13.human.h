@@ -28,16 +28,20 @@ enum Human_Bone {		// 20 bones
 // 포즈 추가 시 밑의 POSENUM 늘리기
 enum Human_Pose {
 	// base는 기본 차렷 포즈
-	start, walkLeftUpMid, 
-	walkLeftUpHigh, walkLeftDownMid, walkLeftDownHigh,
+	start, 
+	walkLeftUpMid, walkLeftUpHigh, walkLeftDownMid, walkLeftDownHigh,
+	jumpReady, jumpStart, jumpHigh, jumpLand
 };
 
 // 재생 순서. 별로 좋은 방법은 아닌 것 같지만 간단하고 빠르게 하기 위함
 const Human_Pose poseSequence[] = {
-	start,
+	start, // 차렷 - 왼팔 앞 - 원위치
 	walkLeftUpMid, walkLeftUpHigh, walkLeftUpMid, 
+	start, // 차렷 - 오른팔 앞 - 원위치
+	walkLeftDownMid, walkLeftDownHigh, walkLeftDownMid, 
+	start, // 차렷 - 점프 - 원위치
+	jumpReady, jumpStart, jumpHigh, jumpStart, jumpLand,
 	start,
-	walkLeftDownMid, walkLeftDownHigh, walkLeftDownMid, start
 };
 const int poseSequenceCount = sizeof(poseSequence) / sizeof(Human_Pose);
 
@@ -400,6 +404,48 @@ private:
 				Pose[walkLeftDownHigh][calfR] = glm::angleAxis(glm::radians(15.f), glm::vec3(1.f, 0.f, 0.f));
 				Pose[walkLeftDownHigh][footR] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
 				break;
+
+				// 뼈 이름 참고
+				//enum Human_Bone {		// 20 bones
+				//	pelvis, spine,
+				//	neck, head,
+				//	clavicleL, upperarmL, forearmL, handL, // hand는 palm/5 fingers로 나눌 수도 있다.
+				//	clavicleR, upperarmR, forearmR, handR,
+				//	thighL, calfL, footL, toeL,
+				//	thighR, calfR, footR, toeR
+				//};
+
+
+			// 점프 ============================
+			case jumpReady:
+				// 점프 준비 자세
+				Pose[jumpReady][upperarmL] = glm::angleAxis(glm::radians(-45.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpReady][upperarmR] = glm::angleAxis(glm::radians(-45.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpReady][thighL] = glm::angleAxis(glm::radians(30.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpReady][thighR] = glm::angleAxis(glm::radians(30.f), glm::vec3(1.f, 0.f, 0.f));
+				break;
+
+			case jumpStart:
+				// 점프 시작 동작(고점 이후 다시 내려올 때도 적용)
+				Pose[jumpStart][upperarmL] = glm::angleAxis(glm::radians(0.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpStart][upperarmR] = glm::angleAxis(glm::radians(0.f), glm::vec3(1.f, 0.f, 0.f));
+
+				break;
+
+			case jumpHigh:
+				// 점프 최고점 
+				Pose[jumpHigh][upperarmL] = glm::angleAxis(glm::radians(60.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpHigh][upperarmR] = glm::angleAxis(glm::radians(60.f), glm::vec3(1.f, 0.f, 0.f));
+
+				break;
+
+			case jumpLand:
+				// 착지 자세 
+				Pose[jumpLand][thighL] = glm::angleAxis(glm::radians(-20.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[jumpLand][thighR] = glm::angleAxis(glm::radians(-20.f), glm::vec3(1.f, 0.f, 0.f));
+
+				break;
+
 			default:
 				;
 			};
