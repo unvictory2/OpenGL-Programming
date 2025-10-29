@@ -48,7 +48,7 @@ const int poseSequenceCount = sizeof(poseSequence) / sizeof(Human_Pose);
 
 // Default values
 const int BONENUM = 20;
-const int POSENUM = 5;
+const int POSENUM = 9;
 
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
