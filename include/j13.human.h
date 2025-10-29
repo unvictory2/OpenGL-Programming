@@ -30,8 +30,18 @@ enum Human_Pose {
 	// base는 기본 차렷 포즈
 	start, walkLeftUpMid, 
 	walkLeftUpHigh, walkLeftDownMid, walkLeftDownHigh,
-	Human_Pose_Count  // 포즈 개수 관리용, main.cpp에서 사용
+	Human_Pose_Count
 };
+
+// 재생 순서. 별로 좋은 방법은 아닌 것 같지만 간단하고 빠르게 하기 위함
+const Human_Pose poseSequence[] = {
+	start,
+	walkLeftUpMid, walkLeftUpHigh, walkLeftUpMid, 
+	start,
+	walkLeftDownMid, walkLeftDownHigh, walkLeftDownMid, start
+};
+const int poseSequenceCount = sizeof(poseSequence) / sizeof(Human_Pose);
+
 
 // Default values
 const int BONENUM = 20;
@@ -322,15 +332,74 @@ private:
 			case start:// 최종 포즈 기준으로 입력. 차렷포즈. 쇄골은 상완이랑 직각임(현실 인체에서 그러니까)
 				break;
 			case walkLeftUpMid:// 왼팔/오른발 살짝 앞, 오른팔/왼발 살짝 뒤
-				//Pose[walkLeftUpMid][upperarmL] = glm::angleAxis(glm::radians(190.f), glm::vec3(1.f, 0.f, 0.f));
-				//Pose[walkLeftUpMid][upperarmR] = glm::angleAxis(glm::radians(190.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftUpMid][upperarmL] = glm::angleAxis(glm::radians(-20.f), glm::vec3(0.f, 1.f, 0.f));
+				Pose[walkLeftUpMid][upperarmR] = glm::angleAxis(glm::radians(-20.f), glm::vec3(0.f, 1.f, 0.f));
+
+				// 상완은 쇄골 때문에 회전해서 y축 회전이 카메라 방향인데, 보통은 x축이 카메라 방향이다. 
+				Pose[walkLeftUpMid][forearmL] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftUpMid][forearmR] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
+
+				// 하체
+				Pose[walkLeftUpMid][thighL] = glm::angleAxis(glm::radians(12.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftUpMid][calfL] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftUpMid][footL] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
+
+				Pose[walkLeftUpMid][thighR] = glm::angleAxis(glm::radians(-12.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftUpMid][calfR] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftUpMid][footR] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
+
 
 				break;
 			case walkLeftUpHigh:
+				Pose[walkLeftUpHigh][upperarmL] = glm::angleAxis(glm::radians(-25.f), glm::vec3(0.f, 1.f, 0.f));
+				Pose[walkLeftUpHigh][upperarmR] = glm::angleAxis(glm::radians(-22.f), glm::vec3(0.f, 1.f, 0.f));
+
+				Pose[walkLeftUpHigh][forearmL] = glm::angleAxis(glm::radians(20.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftUpHigh][forearmR] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
+
+				// 하체
+				Pose[walkLeftUpHigh][thighL] = glm::angleAxis(glm::radians(25.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftUpHigh][calfL] = glm::angleAxis(glm::radians(15.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftUpHigh][footL] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
+
+				Pose[walkLeftUpHigh][thighR] = glm::angleAxis(glm::radians(-25.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftUpHigh][calfR] = glm::angleAxis(glm::radians(15.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftUpHigh][footR] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
+
 				break;
 			case walkLeftDownMid:
+				Pose[walkLeftDownMid][upperarmL] = glm::angleAxis(glm::radians(20.f), glm::vec3(0.f, 1.f, 0.f));
+				Pose[walkLeftDownMid][upperarmR] = glm::angleAxis(glm::radians(20.f), glm::vec3(0.f, 1.f, 0.f));
+
+				// 상완은 쇄골 때문에 회전해서 y축 회전이 카메라 방향인데, 보통은 x축이 카메라 방향이다. 
+				Pose[walkLeftDownMid][forearmL] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftDownMid][forearmR] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
+
+				// 하체
+				Pose[walkLeftDownMid][thighL] = glm::angleAxis(glm::radians(-12.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftDownMid][calfL] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftDownMid][footL] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
+
+				Pose[walkLeftDownMid][thighR] = glm::angleAxis(glm::radians(12.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftDownMid][calfR] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftDownMid][footR] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
+
 				break;			
 			case walkLeftDownHigh:
+				Pose[walkLeftDownHigh][upperarmL] = glm::angleAxis(glm::radians(22.f), glm::vec3(0.f, 1.f, 0.f));
+				Pose[walkLeftDownHigh][upperarmR] = glm::angleAxis(glm::radians(25.f), glm::vec3(0.f, 1.f, 0.f));
+
+				Pose[walkLeftDownHigh][forearmL] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftDownHigh][forearmR] = glm::angleAxis(glm::radians(20.f), glm::vec3(1.f, 0.f, 0.f));
+
+				// 하체
+				Pose[walkLeftDownHigh][thighL] = glm::angleAxis(glm::radians(-25.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftDownHigh][calfL] = glm::angleAxis(glm::radians(15.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftDownHigh][footL] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
+
+				Pose[walkLeftDownHigh][thighR] = glm::angleAxis(glm::radians(25.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftDownHigh][calfR] = glm::angleAxis(glm::radians(15.f), glm::vec3(1.f, 0.f, 0.f));
+				Pose[walkLeftDownHigh][footR] = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
 				break;
 			default:
 				;

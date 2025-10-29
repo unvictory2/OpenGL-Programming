@@ -42,8 +42,8 @@ float lastFrame = 0.0f;
 // 포즈 보간할 때 쓸 예정
 const int numPoses = Human_Pose_Count;
 Human_Pose poses[Human_Pose_Count];
-const float totalMotionTime = 5.0f;  
-const int numSegments = numPoses - 1;
+const float totalMotionTime = 3.0f;  
+const int numSegments = poseSequenceCount - 1;
 const float segmentTime = totalMotionTime / numSegments;
 
 // lighting
@@ -213,7 +213,7 @@ int main()
 		glm::mat4 model = glm::mat4(1.0f);
 		static float s = 0.0f;
 		s += deltaTime;
-		//model = glm::translate(model, glm::vec3(0.0f, 0.0f, s));
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, s));
 		boneShader.setMat4("model", model);
 
 		// render a human
@@ -228,12 +228,14 @@ int main()
 
 		int segment_idx = (int)(t_total / segmentTime);
 
-		std::cout << "t_total: " << t_total << ", segmentTime: " << segmentTime << ", segment_idx: " << segment_idx << ", pose enum: " << poses[segment_idx] << std::endl;
-
-		std::cout << "현재 포즈: " << poses[segment_idx] << std::endl;
 		float t_in_segment = (t_total - segment_idx * segmentTime) / segmentTime;
 
-		human.MixPose(poses[segment_idx], poses[segment_idx + 1], t_in_segment);// 움직이는 과정
+		int next_idx = segment_idx + 1;
+		if (next_idx >= poseSequenceCount) {
+			next_idx = 0; // 배열 첫 번째 인덱스로 순환
+		}
+		human.MixPose(poseSequence[segment_idx], poseSequence[next_idx], t_in_segment);
+
 		human.DrawHuman(boneShader, cubeVAO, model);
 
 
