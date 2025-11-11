@@ -1,26 +1,21 @@
+// solarsystem vs 그대로 가져옴. 이게 상위호환이라
 #version 330 core
-layout (location = 0) in vec3 aVel;
-layout (location = 1) in vec3 aRGB;
+layout (location = 0) in vec3 aPos;        // 구/바닥: 위치
+layout (location = 1) in vec3 aNormal;     // 구/바닥: 노말
+layout (location = 2) in vec2 aTexCoord;   // 구/바닥: UV
 
-out vec4 Color;
+out vec3 FragPos;
+out vec2 TexCoord;
+out vec3 Normal;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-uniform vec3 gravity;
-uniform float lifetime;
-uniform float time;
 
 void main()
 {
-	vec3 pos = vec3(0.0);
-	float alpha = 1.0;
-	if (time < lifetime){
-		pos = aVel * time + gravity * time * time; 
-		alpha = 1.0 - time/lifetime;
-	}
-	else
-		alpha = 0.0;
-	Color = vec4(aRGB, alpha);
-	gl_Position = projection * view * model * vec4(pos, 1.0);
+    FragPos = vec3(model * vec4(aPos, 1.0));
+    Normal  = normalize(transpose(inverse(mat3(model))) * aNormal);
+    TexCoord = aTexCoord;
+    gl_Position = projection * view * vec4(FragPos, 1.0);
 }
