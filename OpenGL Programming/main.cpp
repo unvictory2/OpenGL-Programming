@@ -1,12 +1,4 @@
-﻿//////////////////////////////////////////
-//		jieunlee@hansung.ac.kr			//
-//		2020. 10. 12					//
-//////////////////////////////////////////
-
-//세트: j13human.h, j13human.vs, j13human.fs
-//헤더는 include폴더에, vs fs 쉐이더는 이 코드랑 같은 디렉토리에
-
-#include <glad/glad.h>
+﻿#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
@@ -16,21 +8,21 @@
 #include <learnopengl/shader.h>
 #include <learnopengl/camera.h>
 
-#include <iostream>
-
-#include "j13.human.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 
+// object drawing
+void drawLShape(unsigned int VAO, unsigned int nVert, bool bSolid, bool bColor, glm::mat4 model_curr, Shader shader);
+
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 20.0f));
+Camera camera(glm::vec3(0.0f, 1.0f, 3.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -40,7 +32,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 // lighting
-glm::vec3 lightPos(1.2f, 5.0f, 12.0f);
+glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
 int main()
 {
@@ -86,86 +78,83 @@ int main()
 
 	// build and compile our shader zprogram
 	// ------------------------------------
-	Shader boneShader("j13.human.vs", "j13.human.fs");
-	Shader lampShader("13.2.lamp.vs", "13.2.lamp.fs");
+	Shader cubeShader("j11.cube.vs", "j11.cube.fs");
 
-	// 육면체(네모) 그리기
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
 	float vertices[] = {
-		-0.5f,  0.0f, -0.5f,  0.0f,  0.0f, -1.0f,
-		 0.5f,  0.0f, -0.5f,  0.0f,  0.0f, -1.0f,
-		 0.5f,  1.0f, -0.5f,  0.0f,  0.0f, -1.0f,
-		 0.5f,  1.0f, -0.5f,  0.0f,  0.0f, -1.0f,
-		-0.5f,  1.0f, -0.5f,  0.0f,  0.0f, -1.0f,
-		-0.5f,  0.0f, -0.5f,  0.0f,  0.0f, -1.0f,
+		// position           // normal
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 
-		-0.5f,  0.0f,  0.5f,  0.0f,  0.0f,  1.0f,
-		 0.5f,  0.0f,  0.5f,  0.0f,  0.0f,  1.0f,
-		 0.5f,  1.0f,  0.5f,  0.0f,  0.0f,  1.0f,
-		 0.5f,  1.0f,  0.5f,  0.0f,  0.0f,  1.0f,
-		-0.5f,  1.0f,  0.5f,  0.0f,  0.0f,  1.0f,
-		-0.5f,  0.0f,  0.5f,  0.0f,  0.0f,  1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
 
-		-0.5f,  1.0f,  0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f,  1.0f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f,  0.0f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f,  0.0f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f,  0.0f,  0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f,  1.0f,  0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
 
-		 0.5f,  1.0f,  0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f,  1.0f, -0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f,  0.0f, -0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f,  0.0f, -0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f,  0.0f,  0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f,  1.0f,  0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
 
-		-0.5f,  0.0f, -0.5f,  0.0f, -1.0f,  0.0f,
-		 0.5f,  0.0f, -0.5f,  0.0f, -1.0f,  0.0f,
-		 0.5f,  0.0f,  0.5f,  0.0f, -1.0f,  0.0f,
-		 0.5f,  0.0f,  0.5f,  0.0f, -1.0f,  0.0f,
-		-0.5f,  0.0f,  0.5f,  0.0f, -1.0f,  0.0f,
-		-0.5f,  0.0f, -0.5f,  0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
-		-0.5f,  1.0f, -0.5f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  1.0f, -0.5f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  1.0f,  0.5f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  1.0f,  0.5f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  1.0f,  0.5f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  1.0f, -0.5f,  0.0f,  1.0f,  0.0f
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
 	};
-	// first, configure the cube's VAO (and VBO)
-	unsigned int VBO, cubeVAO;
+
+	// cube VAO and VBO
+	unsigned int cubeVBO, cubeVAO;
 	glGenVertexArrays(1, &cubeVAO);
-	glGenBuffers(1, &VBO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glGenBuffers(1, &cubeVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
 	glBindVertexArray(cubeVAO);
-
 	// position attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 	// normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)3);
+	//glEnableVertexAttribArray(1);
 
 
-	// second, configure the light's VAO (VBO stays the same; the vertices are the same for the light object which is also a 3D cube)
-	unsigned int lightVAO;
-	glGenVertexArrays(1, &lightVAO);
-	glBindVertexArray(lightVAO);
+	// set keyframes
+	// keyframe 0
+	glm::mat4 model0 = glm::mat4(1.0f);
+	//model0 = glm::rotate(model0, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	//glm::quat q0 = glm::quat(cos(glm::radians(90.0f / 2)), 0.0f, sin(glm::radians(90.0f / 2)), 0.0f);
+	glm::quat q0 = glm::angleAxis(glm::radians(90.f), glm::vec3(0.f, 1.f, 0.f));
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	// note that we update the lamp's position attribute's stride to reflect the updated buffer data
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-
-	// Human
-	Human human;
+	// keyframe 1
+	glm::mat4 model1 = glm::mat4(1.0f);
+	model1 = glm::rotate(model1, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model1 = glm::rotate(model1, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model1 = glm::rotate(model1, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::quat q1 = glm::quat_cast(model1);
 
 	// render loop
 	// -----------
@@ -186,49 +175,78 @@ int main()
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// be sure to activate shader when setting uniforms/drawing objects
-		boneShader.use();
-		boneShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-		boneShader.setVec3("lightPos", lightPos);
-		boneShader.setVec3("viewPos", camera.Position);
 
 		// view/projection transformations
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
-		boneShader.setMat4("projection", projection);
-		boneShader.setMat4("view", view);
 
-		// world transformation. 월드에서 걷게 하는 과정 여기서 수정
+
+		// draw cubes
+		cubeShader.use();
+		// view/projection transformations
+		cubeShader.setMat4("projection", projection);
+		cubeShader.setMat4("view", view);
+
+
+		// draw L shape
+		/*
+		// draw the magenta cube
+		cubeShader.setVec3("objectColor", 1.0f, 0.0f, 1.0f);
+		// world transformation
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.5f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 0.1f, 0.1f));
+		cubeShader.setMat4("model", model);
+		// render the cube
+		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// draw the cyan cube
+		cubeShader.setVec3("objectColor", 0.0f, 1.0f, 1.0f);
+		// world transformation
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.5f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.1f, 1.0f, 0.1f));
+		cubeShader.setMat4("model", model);
+		// render the cube
+		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		*/
+
+		// L shape animation 
+
+		// initial orientation
 		glm::mat4 model = glm::mat4(1.0f);
-		static float s = 0.0f;
-		s += deltaTime;
-		//model = glm::translate(model, glm::vec3(0.0f, 0.0f, s));
-		boneShader.setMat4("model", model);
+		drawLShape(cubeVAO, 36, true, false, model, cubeShader);
 
-		// render a human
-		//human.SetBoneRotation(upperarmL, glm::angleAxis(glm::radians(30.f), glm::vec3(0.f, 0.f, 1.f)));
-		//human.SetBoneRotation(forearmL, glm::angleAxis(glm::radians(60.f), glm::vec3(0.f, 0.f, 1.f)));
-		//human.SetPose(armLeftUp);
+		// keyframe 0
+		model0 = glm::mat4_cast(q0);
+		drawLShape(cubeVAO, 36, false, true, model0, cubeShader);
+
+		// keyframe 1
+		model1 = glm::mat4_cast(q1);
+		drawLShape(cubeVAO, 36, false, true, model1, cubeShader);
+
+		// quaternion interpolation using slerp
 		static float t = 0.0f;
-		float dt = deltaTime;
-		human.MixPose(base, armLeftUp, t); // 움직이는 과정
-		human.DrawHuman(boneShader, cubeVAO, model);
-		t = t + dt;
-		if (t > 1.0f) t = 0.0f;
+		glm::quat q = glm::mix(q0, q1, t);
+		model = glm::mat4_cast(q);
+		drawLShape(cubeVAO, 36, true, true, model, cubeShader);
+		t = t + 0.01f;
+		if (t > 1.0) t = 0.0f;
+
+
 
 		// also draw the lamp object
-		/*/
-		lampShader.use();
-		lampShader.setMat4("projection", projection);
-		lampShader.setMat4("view", view);
+		cubeShader.setVec3("objectColor", 1.0f, 1.0f, 1.0f);
+		// world transformation
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
-		lampShader.setMat4("model", model);
-
-		glBindVertexArray(lightVAO);
+		cubeShader.setMat4("model", model);
+		glBindVertexArray(cubeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		*/
+
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
@@ -239,13 +257,53 @@ int main()
 	// optional: de-allocate all resources once they've outlived their purpose:
 	// ------------------------------------------------------------------------
 	glDeleteVertexArrays(1, &cubeVAO);
-	glDeleteVertexArrays(1, &lightVAO);
-	glDeleteBuffers(1, &VBO);
+	//glDeleteVertexArrays(1, &teapotVAO);
+	glDeleteBuffers(1, &cubeVBO);
+	//glDeleteBuffers(1, &teapotVBO);
 
 	// glfw: terminate, clearing all previously allocated GLFW resources.
 	// ------------------------------------------------------------------
 	glfwTerminate();
 	return 0;
+}
+
+// draw L shape
+void drawLShape(unsigned int VAO, unsigned int nVert, bool bSolid, bool bColor, glm::mat4 model_curr, Shader shader)
+{
+	glm::vec3 color1 = glm::vec3(1.0f, 0.0f, 1.0f);
+	glm::vec3 color2 = glm::vec3(0.0f, 1.0f, 1.0f);
+	if (!bColor)
+	{
+		color1 = glm::vec3(0.7f, 0.7f, 0.7f);
+		color2 = glm::vec3(0.7f, 0.7f, 0.7f);
+	}
+
+	// draw the magenta cube
+	shader.setVec3("objectColor", color1);
+	// world transformation
+	glm::mat4 model = model_curr;
+	model = glm::translate(model, glm::vec3(0.5f, 0.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(1.0f, 0.05f, 0.05f));
+	shader.setMat4("model", model);
+	glBindVertexArray(VAO);
+	if (bSolid)
+		glDrawArrays(GL_TRIANGLES, 0, nVert);
+	else
+		glDrawArrays(GL_LINE_LOOP, 0, nVert);
+
+
+	// draw the cyan cube
+	shader.setVec3("objectColor", color2);
+	// world transformation
+	model = model_curr;
+	model = glm::translate(model, glm::vec3(0.0f, 0.5f, 0.0f));
+	model = glm::scale(model, glm::vec3(0.05f, 1.0f, 0.05f));
+	shader.setMat4("model", model);
+	glBindVertexArray(VAO);
+	if (bSolid)
+		glDrawArrays(GL_TRIANGLES, 0, nVert);
+	else
+		glDrawArrays(GL_LINE_LOOP, 0, nVert);
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
