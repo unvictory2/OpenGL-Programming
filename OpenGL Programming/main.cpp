@@ -80,7 +80,7 @@ int main()
 	// -------------------------
 	Shader shader("50.4.normal_mapping.vs", "50.4.normal_mapping.fs");
 
-	// load textures
+	// load textures 새 텍스쳐 가져오면 여기서 바꾸기
 	// -------------
 	unsigned int diffuseMap = loadTexture("..\\textures\\brickwall.jpg");
 	unsigned int normalMap = loadTexture("..\\textures\\brickwall_normal.jpg");
@@ -91,7 +91,7 @@ int main()
 	shader.setInt("diffuseMap", 0);
 	shader.setInt("normalMap", 1);
 
-	// lighting info
+	// lighting info 월드 공간 기준 빛 위치
 	// -------------
 	glm::vec3 lightPos(0.5f, 1.0f, 0.3f);
 
@@ -99,7 +99,7 @@ int main()
 	// -----------
 	while (!glfwWindowShouldClose(window))
 	{
-		// per-frame time logic
+		// per-frame time logic 애니메이션 위해서 시간 구하는 부분
 		// --------------------
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -114,6 +114,7 @@ int main()
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// 쉐이더한테 유니폼 변수 던져줌
 		// configure view/projection matrices
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
@@ -130,6 +131,8 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, diffuseMap);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, normalMap);
+
+		// 이전 코드들과 다른 차이점 
 		renderQuad();
 
 		// render light source (simply re-renders a smaller plane at the light's position for debugging/visualization)
@@ -157,22 +160,24 @@ void renderQuad()
 {
 	if (quadVAO == 0)
 	{
-		// positions
+		// positions 사각형의 네 귀퉁이
 		glm::vec3 pos1(-1.0f, 1.0f, 0.0f);
 		glm::vec3 pos2(-1.0f, -1.0f, 0.0f);
 		glm::vec3 pos3(1.0f, -1.0f, 0.0f);
 		glm::vec3 pos4(1.0f, 1.0f, 0.0f);
-		// texture coordinates
+		// texture coordinates 사각 귀퉁이에 대한 텍스쳐 좌표
 		glm::vec2 uv1(0.0f, 1.0f);
 		glm::vec2 uv2(0.0f, 0.0f);
 		glm::vec2 uv3(1.0f, 0.0f);
 		glm::vec2 uv4(1.0f, 1.0f);
-		// normal vector
+		// normal vector 이 상태에서 노말 벡터. 현재는 x,y 평면 지나가는 판떼기 하나라서 0,0,1
 		glm::vec3 nm(0.0f, 0.0f, 1.0f);
 
-		// calculate tangent/bitangent vectors of both triangles
+		// calculate tangent/bitangent vectors of both triangles 탄젠트랑 바이탄젠트 구해야 함
 		glm::vec3 tangent1, bitangent1;
 		glm::vec3 tangent2, bitangent2;
+
+		// 사각형 그리는 거라 triangle은 1,2로 2개
 		// triangle 1
 		// ----------
 		glm::vec3 edge1 = pos2 - pos1;
@@ -182,10 +187,12 @@ void renderQuad()
 
 		float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
 
+		//traiangle 1 탄젠트값
 		tangent1.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
 		tangent1.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
 		tangent1.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
 
+		//traiangle 1 바이탄젠트값
 		bitangent1.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
 		bitangent1.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
 		bitangent1.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
@@ -210,6 +217,7 @@ void renderQuad()
 
 
 		float quadVertices[] = {
+			// 삼각형의 꼭지점들
 			// positions            // normal         // texcoords  // tangent                          // bitangent
 			pos1.x, pos1.y, pos1.z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
 			pos2.x, pos2.y, pos2.z, nm.x, nm.y, nm.z, uv2.x, uv2.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
