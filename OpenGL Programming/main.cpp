@@ -116,7 +116,7 @@ int main()
 
     // load textures
     // -------------
-    unsigned int woodTexture = loadTexture("..\\textures\\wood.jpg");
+    unsigned int woodTexture = loadTexture("..\\textures\\wood_my.jpg");
 
     // configure depth map FBO
     // -----------------------
@@ -212,7 +212,7 @@ int main()
         glBindTexture(GL_TEXTURE_2D, woodTexture);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, depthMap);
-        //renderScene(shader);
+        renderScene(shader); // 이거 주석까지 풀어야 정상적으로 보임
 
         // render Depth map to quad for visual debugging
         // ---------------------------------------------
@@ -221,7 +221,7 @@ int main()
         debugDepthQuad.setFloat("far_plane", far_plane);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, depthMap);
-        renderQuad();
+        //renderQuad();
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
