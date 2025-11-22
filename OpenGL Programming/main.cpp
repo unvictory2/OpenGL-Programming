@@ -11,6 +11,12 @@
 #include <learnopengl/camera.h>
 //#include <learnopengl/model.h>
 
+// teapot.obj위해서
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
+
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -21,6 +27,13 @@ unsigned int loadTexture(const char* path);
 void renderScene(const Shader& shader);
 void renderCube();
 void renderQuad();
+//teapot 함수 미리 선언
+bool loadTeapotOBJ(const char* path);
+void renderTeapot();
+
+//원랜 main에서 선언했는데 전역 함수인 renderScene()에서 텍스쳐 참고해야 돼서 밖으로 뺌 
+unsigned int woodTexture;
+unsigned int teapotTexture;
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -38,6 +51,11 @@ float lastFrame = 0.0f;
 
 // meshes
 unsigned int planeVAO;
+// teapot mesh
+unsigned int teapotVAO = 0;
+unsigned int teapotVBO = 0;
+int teapotVertexCount = 0;
+
 
 int main()
 {
@@ -54,7 +72,7 @@ int main()
 
     // glfw window creation
     // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "2091184 Seungeon Lee", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -87,6 +105,9 @@ int main()
     Shader simpleDepthShader("80.1.shadow_mapping_depth.vs", "80.1.shadow_mapping_depth.fs");
     Shader debugDepthQuad("80.1.debug_quad.vs", "80.1.debug_quad_depth.fs");
 
+    // teapot OBJ 로드 ====================
+    loadTeapotOBJ("..\\models\\teapot.obj"); // 경로 주의
+
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float planeVertices[] = {
@@ -116,7 +137,8 @@ int main()
 
     // load textures
     // -------------
-    unsigned int woodTexture = loadTexture("..\\textures\\wood_my.jpg");
+    woodTexture = loadTexture("..\\textures\\wood_my.jpg");
+    teapotTexture = loadTexture("..\\textures\\\solarsystem\\2k_mercury.jpg"); //teapot
 
     // configure depth map FBO
     // -----------------------
@@ -242,6 +264,9 @@ int main()
 // --------------------
 void renderScene(const Shader& shader)
 {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, woodTexture);
+
     // floor
     glm::mat4 model = glm::mat4(1.0f);
     shader.setMat4("model", model);
@@ -264,6 +289,14 @@ void renderScene(const Shader& shader)
     model = glm::scale(model, glm::vec3(0.25));
     shader.setMat4("model", model);
     renderCube();
+    // 티팟 실제로 추가 =============
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, teapotTexture); // teapot용 텍스쳐
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(-2.0f, 0.0f, -1.0f)); 
+    model = glm::scale(model, glm::vec3(0.4f));                    
+    shader.setMat4("model", model);
+    renderTeapot();
 }
 
 
@@ -464,4 +497,182 @@ unsigned int loadTexture(char const* path)
     }
 
     return textureID;
+}
+
+// Teapot 관련 함수들  =================================================
+bool loadTeapotOBJ(const char* path)
+{
+    std::ifstream file(path);
+    if (!file.is_open())
+    {
+        std::cout << "Failed to open OBJ file: " << path << std::endl;
+        return false;
+    }
+
+    std::vector<glm::vec3> tempPositions;
+    std::vector<glm::vec3> tempNormals;
+    std::vector<glm::vec2> tempTexcoords;
+
+    // 최종 interleaved 데이터: pos3 + normal3 + uv2 = 8 floats
+    std::vector<float> vertexData;
+
+    std::string line;
+    while (std::getline(file, line))
+    {
+        if (line.empty()) continue;
+
+        std::stringstream ss(line);
+        std::string prefix;
+        ss >> prefix;
+
+        if (prefix == "v")
+        {
+            float x, y, z;
+            ss >> x >> y >> z;
+            tempPositions.push_back(glm::vec3(x, y, z));
+        }
+        else if (prefix == "vt")
+        {
+            float u, v;
+            ss >> u >> v;
+            tempTexcoords.push_back(glm::vec2(u, v));
+        }
+        else if (prefix == "vn")
+        {
+            float x, y, z;
+            ss >> x >> y >> z;
+            tempNormals.push_back(glm::vec3(x, y, z));
+        }
+        else if (prefix == "f")
+        {
+            // f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3 (삼각형 가정)
+            // 또는 v//vn 형태도 대충 처리
+            std::vector<std::string> tokens;
+            std::string token;
+            while (ss >> token)
+                tokens.push_back(token);
+
+            auto addVertexFromToken = [&](const std::string& t)
+                {
+                    int vi = 0, ti = 0, ni = 0;
+
+                    // "v/vt/vn" 혹은 "v//vn" 파싱
+                    size_t firstSlash = t.find('/');
+                    size_t secondSlash = std::string::npos;
+                    if (firstSlash != std::string::npos)
+                        secondSlash = t.find('/', firstSlash + 1);
+
+                    std::string sVi, sTi, sNi;
+
+                    if (firstSlash == std::string::npos)
+                    {
+                        // "v"
+                        sVi = t;
+                    }
+                    else
+                    {
+                        sVi = t.substr(0, firstSlash);
+
+                        if (secondSlash == std::string::npos)
+                        {
+                            // "v/vt"
+                            sTi = t.substr(firstSlash + 1);
+                        }
+                        else
+                        {
+                            // "v//vn" 또는 "v/vt/vn"
+                            if (secondSlash > firstSlash + 1)
+                                sTi = t.substr(firstSlash + 1, secondSlash - firstSlash - 1);
+
+                            sNi = t.substr(secondSlash + 1);
+                        }
+                    }
+
+                    if (!sVi.empty()) vi = std::stoi(sVi);
+                    if (!sTi.empty()) ti = std::stoi(sTi);
+                    if (!sNi.empty()) ni = std::stoi(sNi);
+
+                    glm::vec3 pos(0.0f);
+                    glm::vec3 norm(0.0f, 1.0f, 0.0f);
+                    glm::vec2 uv(0.0f);
+
+                    if (vi > 0 && vi <= (int)tempPositions.size())
+                        pos = tempPositions[vi - 1];
+                    if (ti > 0 && ti <= (int)tempTexcoords.size())
+                        uv = tempTexcoords[ti - 1];
+                    if (ni > 0 && ni <= (int)tempNormals.size())
+                        norm = tempNormals[ni - 1];
+
+                    // pos
+                    vertexData.push_back(pos.x);
+                    vertexData.push_back(pos.y);
+                    vertexData.push_back(pos.z);
+                    // normal
+                    vertexData.push_back(norm.x);
+                    vertexData.push_back(norm.y);
+                    vertexData.push_back(norm.z);
+                    // uv
+                    vertexData.push_back(uv.x);
+                    vertexData.push_back(uv.y);
+                };
+
+            // 삼각형 또는 쿼드(→삼각형 두 개)만 처리
+            if (tokens.size() >= 3)
+            {
+                // 첫 삼각형
+                addVertexFromToken(tokens[0]);
+                addVertexFromToken(tokens[1]);
+                addVertexFromToken(tokens[2]);
+            }
+            if (tokens.size() == 4)
+            {
+                // 쿼드이면 0-2-3으로 하나 더
+                addVertexFromToken(tokens[0]);
+                addVertexFromToken(tokens[2]);
+                addVertexFromToken(tokens[3]);
+            }
+        }
+    }
+
+    file.close();
+
+    if (vertexData.empty())
+    {
+        std::cout << "No vertex data in OBJ: " << path << std::endl;
+        return false;
+    }
+
+    teapotVertexCount = (int)vertexData.size() / 8;
+
+    glGenVertexArrays(1, &teapotVAO);
+    glGenBuffers(1, &teapotVBO);
+
+    glBindVertexArray(teapotVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, teapotVBO);
+    glBufferData(GL_ARRAY_BUFFER,
+        vertexData.size() * sizeof(float),
+        vertexData.data(),
+        GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
+    glBindVertexArray(0);
+
+    std::cout << "Loaded teapot OBJ: " << teapotVertexCount << " vertices" << std::endl;
+    return true;
+}
+
+void renderTeapot()
+{
+    if (teapotVAO == 0 || teapotVertexCount == 0)
+        return;
+
+    glBindVertexArray(teapotVAO);
+    glDrawArrays(GL_TRIANGLES, 0, teapotVertexCount);
+    glBindVertexArray(0);
 }
