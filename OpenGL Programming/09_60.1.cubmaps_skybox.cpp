@@ -1,4 +1,4 @@
-﻿#include <glad/glad.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -11,21 +11,19 @@
 #include <learnopengl/camera.h>
 //#include <learnopengl/model.h>
 
-#include "teapot_loader.h"
-
-#include <iostream>
 using namespace std;
+#include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow* window);
-unsigned int loadTexture(const char* path);
+void processInput(GLFWwindow *window);
+unsigned int loadTexture(const char *path);
 unsigned int loadCubemap(vector<std::string> faces);
 
 // settings
-const unsigned int SCR_WIDTH = 1600;
-const unsigned int SCR_HEIGHT = 1200;
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
 
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -52,7 +50,7 @@ int main()
 
 	// glfw window creation
 	// --------------------
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Jieun Lee", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -81,13 +79,55 @@ int main()
 
 	// build and compile shaders
 	// -------------------------
-	Shader teapotShader("60.3.teapot.vs", "60.3.teapot.fs");
+	Shader shader("60.1.cubemaps.vs", "60.1.cubemaps.fs");
 	Shader skyboxShader("60.1.skybox.vs", "60.1.skybox.fs");
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
-	// 이 skybox vertices를 VBO로 gpu한테 줌
-	// 원점에 큐브 배치해야 되니까 적절히 배치 
 	// ------------------------------------------------------------------
+	float cubeVertices[] = {
+		// positions          // texture Coords
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+	};
 	float skyboxVertices[] = {
 		// positions          
 		-1.0f,  1.0f, -1.0f,
@@ -133,26 +173,17 @@ int main()
 		 1.0f, -1.0f,  1.0f
 	};
 
-	// load teapot data 
-	std::vector <float> data;
-	// teapot.vbo에 티팟의 정점 정보 들어가있음
-	Teapot teapot("teapot.vbo", data, 8);
-	// teapot VAO and VBO
-	unsigned int teapotVBO, teapotVAO;
-	glGenVertexArrays(1, &teapotVAO);
-	glGenBuffers(1, &teapotVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, teapotVBO);
-	// gpu한테 
-	glBufferData(GL_ARRAY_BUFFER, teapot.nVertNum * teapot.nVertFloats * sizeof(float), &data[0], GL_STATIC_DRAW);
-	glBindVertexArray(teapotVAO);
-	// teapot 데이터에서 가져온 숫자들을 규칙에 맞게 쪼개기. 앞 3개는 position, float 2개는 텍스쳐 좌표, 그 다음 float 3개는 노말 이런 식으로.
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, teapot.nVertFloats * sizeof(float), (void*)0);
+	// cube VAO
+	unsigned int cubeVAO, cubeVBO;
+	glGenVertexArrays(1, &cubeVAO);
+	glGenBuffers(1, &cubeVBO);
+	glBindVertexArray(cubeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, teapot.nVertFloats * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, teapot.nVertFloats * sizeof(float), (void*)(5 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	// skybox VAO
 	unsigned int skyboxVAO, skyboxVBO;
 	glGenVertexArrays(1, &skyboxVAO);
@@ -165,8 +196,18 @@ int main()
 
 	// load textures
 	// -------------
+	unsigned int cubeTexture = loadTexture("..\\textures\\container2.png");
+
 	vector<std::string> faces
 	{
+		/*
+		FileSystem::getPath("resources/textures/skybox/right.jpg"),
+		FileSystem::getPath("resources/textures/skybox/left.jpg"),
+		FileSystem::getPath("resources/textures/skybox/top.jpg"),
+		FileSystem::getPath("resources/textures/skybox/bottom.jpg"),
+		FileSystem::getPath("resources/textures/skybox/front.jpg"),
+		FileSystem::getPath("resources/textures/skybox/back.jpg")
+		*/
 		"..\\textures\\skybox\\right.jpg",
 		"..\\textures\\skybox\\left.jpg",
 		"..\\textures\\skybox\\top.jpg",
@@ -178,8 +219,8 @@ int main()
 
 	// shader configuration
 	// --------------------
-	teapotShader.use();
-	teapotShader.setInt("skybox", 0);
+	shader.use();
+	shader.setInt("texture1", 0);
 
 	skyboxShader.use();
 	skyboxShader.setInt("skybox", 0);
@@ -203,34 +244,25 @@ int main()
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// be sure to activate shader when setting uniforms/drawing objects
-		// teapot 그리기
-		teapotShader.use();
+		// draw scene as normal
+		shader.use();
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		teapotShader.setMat4("model", model);
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-		//teapotShader.setMat4("model", model);
-		teapotShader.setMat4("view", view);
-		teapotShader.setMat4("projection", projection);
-		teapotShader.setVec3("eyePos", camera.Position);
-		// draw the teapot object
-		glBindVertexArray(teapotVAO);
-		glActiveTexture(GL_TEXTURE0); // 티팟 그릴 때 0번 텍스쳐 그린다고 설정
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);  // 0번 텍스쳐에 큐브맵 텍스쳐 연결
-		glDrawArrays(GL_TRIANGLES, 0, teapot.nVertNum); // 삼각형으로 티팟 그리기
+		shader.setMat4("model", model);
+		shader.setMat4("view", view);
+		shader.setMat4("projection", projection);
+		// cubes
+		glBindVertexArray(cubeVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, cubeTexture);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
 
-		// draw skybox as last 스카이박스 그리기 
-		// glDepthFunc는 depth test 하는 방식 설명. z buffer가 처음에 1로 세팅되고, 값이 있으면 0~1미만으로 설정됨. 그래서 원래는 GL_LESS가 기본값이라 1이면 안 그렸었음
-		// 근데 GL_LEQUAL은 Less Equal의 줄임말, 1이여도 그리란 뜻. skybox그릴땐 depth test에서 z buffer 값 1이여도 그려라.
-		// 큐브 배경의 z값은 skybox.vs에서 언제나 1로 만들어서 가져온다. 큐브 배경의 실제 크기는 매우 작지만 이 쉐이더에서 임의로 z값 조작했음
-		// 1 안 그리는 상태면 언제나 z값이 1로 오는 배경은 절대 그려지지 않을 거임
+		// draw skybox as last
 		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
 		skyboxShader.use();
 		view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
-		// 큐브맵은 이미 원점에 맞춰서 배치했기 때문에 model matrix는 없다. 어디 옮길 필요 없으니까
 		skyboxShader.setMat4("view", view);
 		skyboxShader.setMat4("projection", projection);
 		// skybox cube
@@ -239,7 +271,7 @@ int main()
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
-		glDepthFunc(GL_LESS); // 이게 기본값 depth test임. skybox 다 그렸으니 다시 이걸로 돌아오기. 원래는 이게 기본값으로 있었어서 다른 set depth function back to default
+		glDepthFunc(GL_LESS); // set depth function back to default
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
@@ -249,10 +281,10 @@ int main()
 
 	// optional: de-allocate all resources once they've outlived their purpose:
 	// ------------------------------------------------------------------------
-	glDeleteVertexArrays(1, &teapotVAO);
+	glDeleteVertexArrays(1, &cubeVAO);
 	glDeleteVertexArrays(1, &skyboxVAO);
-	glDeleteBuffers(1, &teapotVBO);
-	glDeleteBuffers(1, &skyboxVBO);
+	glDeleteBuffers(1, &cubeVBO);
+	glDeleteBuffers(1, &skyboxVAO);
 
 	glfwTerminate();
 	return 0;
@@ -260,7 +292,7 @@ int main()
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow* window)
+void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
@@ -313,13 +345,13 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 
 // utility function for loading a 2D texture from file
 // ---------------------------------------------------
-unsigned int loadTexture(char const* path)
+unsigned int loadTexture(char const * path)
 {
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
 
 	int width, height, nrComponents;
-	unsigned char* data = stbi_load(path, &width, &height, &nrComponents, 0);
+	unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
 	if (data)
 	{
 		GLenum format;
@@ -361,21 +393,16 @@ unsigned int loadTexture(char const* path)
 // -------------------------------------------------------
 unsigned int loadCubemap(vector<std::string> faces)
 {
-	// 사용할 텍스쳐 만들기
 	unsigned int textureID;
-	glGenTextures(1, &textureID); // 생성
-	// 텍스쳐를 조작할 거면 바인딩을 해놔야 함. 다 쓰고 나서 끊는 작업도 해야되는데 다른 textureID 넣으면 끊김
-	// 이전과 다르게 타겟 텍스쳐가 2d가 아니라 CUBE_MAP이다 
+	glGenTextures(1, &textureID);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
 	int width, height, nrChannels;
 	for (unsigned int i = 0; i < faces.size(); i++)
 	{
-		//  인자의 내용은 std image loader가 알아서 이미지로부터 읽어옴
-		unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+		unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
 		if (data)
 		{
-			// enum이기 때문에 +i하면 POSTIVE_X > POSITIVE_Y 뭐 이런 식으로 쭉 돌아가면서 들어옴 6개 다
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 			stbi_image_free(data);
 		}
@@ -387,7 +414,7 @@ unsigned int loadCubemap(vector<std::string> faces)
 	}
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // 텍스쳐 사이즈 넘어가버리면 테두리에 있는 색 늘려서 써라(clamp to edge)
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
