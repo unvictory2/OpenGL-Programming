@@ -29,7 +29,7 @@ float ShadowCalculation(vec4 fragPosLightSpace)
     // check whether current frag pos is in shadow
     // 이 부분 수정하면 자글자글한 현상 수정 가능(bias 추가)
     // float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005); 
-    float bias = 0.005;  
+    float bias = 0.05;  
     float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;  
 
     return shadow;
